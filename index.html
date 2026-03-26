@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>⭐ 星晨的每日打卡</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+  padding: 16px;
+  color: #333;
+}
+
+.app {
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  text-align: center;
+  padding: 20px 0 16px;
+}
+
+.header h1 {
+  font-size: 24px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  margin-bottom: 4px;
+}
+
+.header .subtitle {
+  color: rgba(255,255,255,0.85);
+  font-size: 14px;
+}
+
+/* Week navigation */
+.week-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.week-nav button {
+  background: rgba(255,255,255,0.2);
+  border: none;
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.week-nav button:active {
+  background: rgba(255,255,255,0.35);
+}
+
+.week-label {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Today button */
+.today-btn {
+  background: rgba(255,255,255,0.15);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: #fff;
+  padding: 4px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-left: 8px;
+}
+
+.today-btn:active {
+  background: rgba(255,255,255,0.3);
+}
+
+/* Stats bar */
+.stats-bar {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stat-card {
+  flex: 1;
+  background: rgba(255,255,255,0.95);
+  border-radius: 12px;
+  padding: 10px 8px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.stat-card .num {
+  font-size: 24px;
+  font-weight: 700;
+  color: #667eea;
+}
+
+.stat-card .label {
+  font-size: 11px;
+  color: #999;
+  margin-top: 2px;
+}
+
+/* Main card */
+.main-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  margin-bottom: 16px;
+}
+
+/* Day rows */
+.day-row {
+  display: flex;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.day-row:last-child {
+  border-bottom: none;
+}
+
+.day-row.is-today {
+  background: #f0f4ff;
+  border-radius: 12px;
+  padding: 10px;
+  margin: 0 -10px;
+}
+
+.day-label {
+  width: 52px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.day-label .name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+.day-label .date {
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 1px;
+}
+
+.day-row.is-today .day-label .name {
+  color: #667eea;
+}
+
+.day-row.is-today .day-label .date {
+  color: #667eea;
+}
+
+/* Habits */
+.habits {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.habit-btn {
+  width: 52px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid #e8e8e8;
+  background: #fafafa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.habit-btn:active {
+  transform: scale(0.92);
+}
+
+.habit-btn .icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+.habit-btn .text {
+  font-size: 9px;
+  color: #bbb;
+  margin-top: 1px;
+}
+
+.habit-btn.checked {
+  border-color: #667eea;
+  background: #f0f4ff;
+}
+
+.habit-btn.checked .text {
+  color: #667eea;
+  font-weight: 600;
+}
+
+/* Day score */
+.day-score {
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.day-score .dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.dot.all { background: #e8f5e9; color: #43a047; }
+.dot.partial { background: #fff8e1; color: #ffa000; }
+.dot.none { background: #fafafa; color: #ddd; }
+
+/* Week summary */
+.summary {
+  background: #fff;
+  border-radius: 16px;
+  padding: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  margin-bottom: 16px;
+}
+
+.summary h3 {
+  font-size: 15px;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.habit-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.habit-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.habit-stat-row .label {
+  width: 56px;
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 12px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.progress-bar .fill {
+  height: 100%;
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+.fill.teeth { background: linear-gradient(90deg, #667eea, #764ba2); }
+.fill.shower { background: linear-gradient(90deg, #43e97b, #38f9d7); }
+.fill.hair { background: linear-gradient(90deg, #fa709a, #fee140); }
+
+.habit-stat-row .count {
+  font-size: 12px;
+  color: #999;
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* Reset button */
+.footer {
+  text-align: center;
+  padding: 8px 0 24px;
+}
+
+.reset-btn {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  cursor: pointer;
+  padding: 8px 16px;
+}
+
+.reset-btn:active {
+  color: rgba(255,255,255,0.8);
+}
+
+/* Animations */
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+.habit-btn.just-checked .icon {
+  animation: pop 0.3s ease;
+}
+
+/* Streak toast */
+.toast {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: rgba(0,0,0,0.8);
+  color: #fff;
+  padding: 16px 28px;
+  border-radius: 16px;
+  font-size: 18px;
+  font-weight: 600;
+  opacity: 0;
+  transition: all 0.3s ease;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>⭐ 星晨的每日打卡</h1>
+    <div class="subtitle">每天坚持，变成更好的自己</div>
+  </div>
+
+  <div class="week-nav">
+    <button onclick="changeWeek(-1)">◀</button>
+    <div>
+      <span class="week-label" id="weekLabel"></span>
+      <button class="today-btn" onclick="goToday()">今天</button>
+    </div>
+    <button onclick="changeWeek(1)">▶</button>
+  </div>
+
+  <div class="stats-bar">
+    <div class="stat-card">
+      <div class="num" id="statStreak">0</div>
+      <div class="label">🔥 连续天数</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statWeek">0</div>
+      <div class="label">📅 本周完成</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statTotal">0</div>
+      <div class="label">💪 总打卡次数</div>
+    </div>
+  </div>
+
+  <div class="main-card" id="checkinCard"></div>
+
+  <div class="summary">
+    <h3>📊 本周统计</h3>
+    <div class="habit-stats">
+      <div class="habit-stat-row">
+        <div class="label">🪥 刷牙</div>
+        <div class="progress-bar"><div class="fill teeth" id="barTeeth" style="width:0%"></div></div>
+        <div class="count" id="countTeeth">0/7</div>
+      </div>
+      <div class="habit-stat-row">
+        <div class="label">🚿 洗澡</div>
+        <div class="progress-bar"><div class="fill shower" id="barShower" style="width:0%"></div></div>
+        <div class="count" id="countShower">0/7</div>
+      </div>
+      <div class="habit-stat-row">
+        <div class="label">🧴 洗头</div>
+        <div class="progress-bar"><div class="fill hair" id="barHair" style="width:0%"></div></div>
+        <div class="count" id="countHair">0/7</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="reset-btn" onclick="resetWeek()">清除本周数据</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const HABITS = [
+  { key: 'teeth_am', icon: '🪥', text: '早刷', type: 'teeth' },
+  { key: 'teeth_pm', icon: '🪥', text: '晚刷', type: 'teeth' },
+  { key: 'shower',   icon: '🚿', text: '洗澡', type: 'shower' },
+  { key: 'hair',     icon: '🧴', text: '洗头', type: 'hair' },
+];
+
+const DAY_NAMES = ['一', '二', '三', '四', '五', '六', '日'];
+const today = new Date();
+let currentWeekStart = getMonday(today);
+
+function getMonday(d) {
+  const date = new Date(d);
+  const day = date.getDay();
+  const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+  date.setDate(diff);
+  date.setHours(0,0,0,0);
+  return date;
+}
+
+function dateKey(d) {
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function isToday(d) {
+  return dateKey(d) === dateKey(today);
+}
+
+function loadData() {
+  try { return JSON.parse(localStorage.getItem('chenchen_checkin') || '{}'); }
+  catch { return {}; }
+}
+
+function saveData(data) {
+  localStorage.setItem('chenchen_checkin', JSON.stringify(data));
+}
+
+function toggleHabit(dateStr, habitKey, btn) {
+  const data = loadData();
+  if (!data[dateStr]) data[dateStr] = {};
+  data[dateStr][habitKey] = !data[dateStr][habitKey];
+  saveData(data);
+
+  btn.classList.add('just-checked');
+  setTimeout(() => btn.classList.remove('just-checked'), 300);
+
+  render();
+
+  // Check if all habits done for today
+  const todayStr = dateKey(today);
+  if (dateStr === todayStr) {
+    const todayData = data[todayStr] || {};
+    const allDone = HABITS.every(h => todayData[h.key]);
+    if (allDone) showToast('🎉 全部完成！太棒了！');
+  }
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 1500);
+}
+
+function changeWeek(dir) {
+  currentWeekStart.setDate(currentWeekStart.getDate() + dir * 7);
+  render();
+}
+
+function goToday() {
+  currentWeekStart = getMonday(today);
+  render();
+}
+
+function resetWeek() {
+  if (!confirm('确定清除本周的打卡数据吗？')) return;
+  const data = loadData();
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    delete data[dateKey(d)];
+  }
+  saveData(data);
+  render();
+}
+
+function calcStreak(data) {
+  let streak = 0;
+  const d = new Date(today);
+  while (true) {
+    const key = dateKey(d);
+    const dayData = data[key];
+    if (!dayData) { if (streak > 0 || isToday(d)) { /* skip today if not started */ } else break; }
+    if (dayData) {
+      const allDone = HABITS.every(h => dayData[h.key]);
+      if (allDone) streak++;
+      else if (!isToday(d)) break;
+    }
+    d.setDate(d.getDate() - 1);
+    if (streak === 0 && !isToday(new Date(d))) break;
+  }
+  return streak;
+}
+
+function render() {
+  const data = loadData();
+
+  // Week label
+  const weekEnd = new Date(currentWeekStart);
+  weekEnd.setDate(weekEnd.getDate() + 6);
+  document.getElementById('weekLabel').textContent =
+    `${currentWeekStart.getMonth()+1}/${currentWeekStart.getDate()} - ${weekEnd.getMonth()+1}/${weekEnd.getDate()}`;
+
+  // Build rows
+  let html = '';
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    const key = dateKey(d);
+    const dayData = data[key] || {};
+    const todayClass = isToday(d) ? ' is-today' : '';
+    const weekday = DAY_NAMES[i];
+    const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
+
+    let habitsHtml = '';
+    HABITS.forEach(h => {
+      const checked = dayData[h.key] ? ' checked' : '';
+      habitsHtml += `<button class="habit-btn${checked}" onclick="toggleHabit('${key}','${h.key}',this)">
+        <span class="icon">${h.icon}</span><span class="text">${h.text}</span>
+      </button>`;
+    });
+
+    // Day completion score
+    const done = HABITS.filter(h => dayData[h.key]).length;
+    let dotClass = 'none';
+    let dotText = '';
+    if (done === HABITS.length) { dotClass = 'all'; dotText = '⭐'; }
+    else if (done > 0) { dotClass = 'partial'; dotText = done; }
+
+    html += `<div class="day-row${todayClass}">
+      <div class="day-label">
+        <div class="name">周${weekday}</div>
+        <div class="date">${dateStr}</div>
+      </div>
+      <div class="habits">${habitsHtml}</div>
+      <div class="day-score"><span class="dot ${dotClass}">${dotText}</span></div>
+    </div>`;
+  }
+  document.getElementById('checkinCard').innerHTML = html;
+
+  // Stats
+  const streak = calcStreak(data);
+  document.getElementById('statStreak').textContent = streak;
+
+  let weekDone = 0, weekTotal = 0;
+  let teethCount = 0, showerCount = 0, hairCount = 0;
+  let daysWithData = 0;
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(currentWeekStart);
+    d.setDate(d.getDate() + i);
+    const key = dateKey(d);
+    const dayData = data[key] || {};
+    const done = HABITS.filter(h => dayData[h.key]).length;
+    weekDone += done;
+    weekTotal += HABITS.length;
+    if (dayData.teeth_am) teethCount++;
+    if (dayData.teeth_pm) teethCount++;
+    if (dayData.shower) showerCount++;
+    if (dayData.hair) hairCount++;
+    if (Object.keys(dayData).length > 0) daysWithData++;
+  }
+
+  // Total all-time
+  let totalAll = 0;
+  Object.values(data).forEach(day => {
+    HABITS.forEach(h => { if (day[h.key]) totalAll++; });
+  });
+  document.getElementById('statWeek').textContent = weekDone;
+  document.getElementById('statTotal').textContent = totalAll;
+
+  // Progress bars
+  const teethMax = daysWithData * 2;
+  const teethPct = teethMax > 0 ? (teethCount / teethMax * 100) : 0;
+  const showerPct = daysWithData > 0 ? (showerCount / daysWithData * 100) : 0;
+  const hairPct = daysWithData > 0 ? (hairCount / daysWithData * 100) : 0;
+
+  document.getElementById('barTeeth').style.width = teethPct + '%';
+  document.getElementById('barShower').style.width = showerPct + '%';
+  document.getElementById('barHair').style.width = hairPct + '%';
+
+  document.getElementById('countTeeth').textContent = teethCount + '/' + Math.max(teethMax, 2);
+  document.getElementById('countShower').textContent = showerCount + '/7';
+  document.getElementById('countHair').textContent = hairCount + '/7';
+}
+
+render();
+</script>
+</body>
+</html>
