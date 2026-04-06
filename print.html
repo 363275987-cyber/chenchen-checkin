@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>星晨每日打卡表</title>
+<style>
+  @page { size: A4; margin: 15mm; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+    padding: 20px;
+    color: #333;
+  }
+
+  .title {
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .title h1 {
+    font-size: 26px;
+    margin-bottom: 4px;
+  }
+  .title p {
+    font-size: 13px;
+    color: #999;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  th, td {
+    border: 1px solid #ccc;
+    padding: 6px 4px;
+    text-align: center;
+    height: 32px;
+  }
+
+  thead th {
+    background: #f5f5f5;
+    font-weight: 600;
+    font-size: 13px;
+  }
+
+  thead th:first-child {
+    width: 52px;
+  }
+
+  tbody td:first-child {
+    font-weight: 600;
+    font-size: 12px;
+    color: #666;
+  }
+
+  /* checkbox style - empty boxes to check */
+  .box {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 1.5px solid #bbb;
+    border-radius: 3px;
+    vertical-align: middle;
+  }
+
+  /* Week separator */
+  .week-end td {
+    border-bottom: 2px solid #999;
+  }
+
+  /* Streak row */
+  .streak td {
+    background: #fafafa;
+    font-size: 12px;
+    color: #666;
+  }
+
+  .note {
+    margin-top: 20px;
+    font-size: 12px;
+    color: #999;
+    line-height: 1.8;
+  }
+
+  .note span {
+    color: #666;
+    font-weight: 600;
+  }
+
+  /* Print optimization */
+  @media print {
+    body { padding: 0; }
+    .no-print { display: none; }
+    th, td { border-color: #999; }
+  }
+
+  .print-btn {
+    display: block;
+    margin: 0 auto 16px;
+    padding: 8px 32px;
+    background: #667eea;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .print-btn:active { background: #5a6fd6; }
+
+  /* Month selector */
+  .controls {
+    text-align: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+    color: #666;
+  }
+  .controls select {
+    padding: 4px 8px;
+    font-size: 14px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+
+<div class="no-print controls">
+  月份：<select id="monthSelect" onchange="render()"></select>
+  <button class="print-btn" onclick="window.print()">🖨️ 打印</button>
+</div>
+
+<div class="title">
+  <h1>⭐ 星晨每日打卡表</h1>
+  <p id="monthLabel"></p>
+</div>
+
+<table id="checkinTable">
+  <thead>
+    <tr>
+      <th>日期</th>
+      <th>早上刷牙</th>
+      <th>晚上刷牙</th>
+      <th>洗澡</th>
+      <th>洗头</th>
+      <th>自我评价</th>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+
+<div class="note">
+  <p><span>📅 使用方法</span>：每天完成后在对应格子里打 ✓，周末可以写一句总结或感受。</p>
+  <p><span>💪 坚持打卡</span>：每天完成 4 项 = 满分，一周全勤可以跟爸爸兑换一个小奖励！</p>
+</div>
+
+<script>
+const now = new Date();
+const select = document.getElementById('monthSelect');
+
+// Populate month options (current month ±6)
+for (let i = -6; i <= 6; i++) {
+  const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+  const val = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const label = `${d.getFullYear()}年${d.getMonth()+1}月`;
+  const opt = document.createElement('option');
+  opt.value = val;
+  opt.textContent = label;
+  if (i === 0) opt.selected = true;
+  select.appendChild(opt);
+}
+
+function render() {
+  const [year, month] = select.value.split('-').map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  document.getElementById('monthLabel').textContent = `${year}年${month}月`;
+
+  const tbody = document.getElementById('tableBody');
+  let html = '';
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const d = new Date(year, month - 1, day);
+    const dow = d.getDay(); // 0=Sun
+    const weekDay = ['日','一','二','三','四','五','六'][dow];
+    const isWeekend = dow === 0 || dow === 6;
+    const isToday = day === now.getDate() && month === now.getMonth() + 1 && year === now.getFullYear();
+
+    const trClass = isWeekend ? 'week-end' : '';
+    html += `<tr class="${trClass}">`;
+    html += `<td>${month}/${day}<br><small>${weekDay}</small></td>`;
+    html += `<td><span class="box"></span></td>`;
+    html += `<td><span class="box"></span></td>`;
+    html += `<td><span class="box"></span></td>`;
+    html += `<td><span class="box"></span></td>`;
+    html += `<td></td>`; // blank for self-evaluation
+    html += `</tr>`;
+  }
+
+  tbody.innerHTML = html;
+}
+
+render();
+</script>
+
+</body>
+</html>
