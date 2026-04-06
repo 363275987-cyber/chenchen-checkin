@@ -417,11 +417,18 @@ body {
 
 <script>
 const HABITS = [
-  { key: 'teeth_am', icon: '🪥', text: '早刷', type: 'teeth' },
-  { key: 'teeth_pm', icon: '🪥', text: '晚刷', type: 'teeth' },
-  { key: 'shower',   icon: '🚿', text: '洗澡', type: 'shower' },
-  { key: 'hair',     icon: '🧴', text: '洗头', type: 'hair' },
+  { key: 'teeth_am', icon: '🪥', text: '早刷' },
+  { key: 'teeth_pm', icon: '🪥', text: '晚刷' },
+  { key: 'shower',   icon: '🚿', text: '洗澡' },
+  { key: 'hair',     icon: '🧴', text: '洗头', interval: 3 },
 ];
+
+function isHabitDueForDate(habit, date) {
+  if (!habit.interval) return true;
+  const base = new Date(2026, 3, 6); // 起始日 4月6日
+  const diff = Math.floor((date - base) / 86400000);
+  return diff >= 0 && diff % habit.interval === 0;
+}
 
 const DAY_NAMES = ['一', '二', '三', '四', '五', '六', '日'];
 const today = new Date();
@@ -468,7 +475,8 @@ function toggleHabit(dateStr, habitKey, btn) {
   const todayStr = dateKey(today);
   if (dateStr === todayStr) {
     const todayData = data[todayStr] || {};
-    const allDone = HABITS.every(h => todayData[h.key]);
+    const todayDue = HABITS.filter(h => isHabitDueForDate(h, today));
+    const allDone = todayDue.every(h => todayData[h.key]);
     if (allDone) showToast('🎉 全部完成！太棒了！');
   }
 }
@@ -510,7 +518,8 @@ function calcStreak(data) {
     const dayData = data[key];
     if (!dayData) { if (streak > 0 || isToday(d)) { /* skip today if not started */ } else break; }
     if (dayData) {
-      const allDone = HABITS.every(h => dayData[h.key]);
+      const dueHabits = HABITS.filter(h => isHabitDueForDate(h, d));
+      const allDone = dueHabits.every(h => dayData[h.key]);
       if (allDone) streak++;
       else if (!isToday(d)) break;
     }
@@ -541,19 +550,28 @@ function render() {
     const dateStr = `${d.getMonth()+1}/${d.getDate()}`;
 
     let habitsHtml = '';
+    const dueHabits = HABITS.filter(h => isHabitDueForDate(h, d));
     HABITS.forEach(h => {
+      const due = isHabitDueForDate(h, d);
       const checked = dayData[h.key] ? ' checked' : '';
-      habitsHtml += `<button class="habit-btn${checked}" onclick="toggleHabit('${key}','${h.key}',this)">
-        <span class="icon">${h.icon}</span><span class="text">${h.text}</span>
-      </button>`;
+      if (due) {
+        habitsHtml += `<button class="habit-btn${checked}" onclick="toggleHabit('${key}','${h.key}',this)">
+          <span class="icon">${h.icon}</span><span class="text">${h.text}</span>
+        </button>`;
+      } else {
+        habitsHtml += `<button class="habit-btn" style="opacity:0.3;cursor:default" disabled>
+          <span class="icon">${h.icon}</span><span class="text">休息</span>
+        </button>`;
+      }
     });
 
     // Day completion score
-    const done = HABITS.filter(h => dayData[h.key]).length;
+    const done = dueHabits.filter(h => dayData[h.key]).length;
+    const total = dueHabits.length;
     let dotClass = 'none';
     let dotText = '';
-    if (done === HABITS.length) { dotClass = 'all'; dotText = '⭐'; }
-    else if (done > 0) { dotClass = 'partial'; dotText = done; }
+    if (total > 0 && done === total) { dotClass = 'all'; dotText = '⭐'; }
+    else if (done > 0) { dotClass = 'partial'; dotText = done + '/' + total; }
 
     html += `<div class="day-row${todayClass}">
       <div class="day-label">
